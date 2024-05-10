@@ -2,26 +2,35 @@ using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.UI;
 
+[RequireComponent(typeof(Slider))]
 public class VolumeController : MonoBehaviour
 {
     private const float Multiplier = 20f;
 
     [SerializeField] private AudioMixerGroup _mixer;
+    [SerializeField] private Toggle _toggle;
+    [SerializeField] private string _volumeParameter = "Master";
 
-    public void ToggleAudio(string masterVolume)
+    private Slider _slider;
+
+    private void Awake()
     {
-        Toggle toggle = GetComponent<Toggle>();
-
-        if (toggle.isOn)
-            _mixer.audioMixer.SetFloat(masterVolume, -80);
-        else
-            _mixer.audioMixer.SetFloat(masterVolume, 0);
+        _slider = GetComponent<Slider>();
     }
 
-    public void ChangeVolume(string volumeParameter)
+    private void OnEnable()
     {
-        Slider slider = GetComponent<Slider>();
+        _slider.onValueChanged.AddListener(ChangeVolume);
+    }
 
-        _mixer.audioMixer.SetFloat(volumeParameter, Mathf.Log10(slider.value) * Multiplier);
+    private void OnDisable()
+    {
+        _slider.onValueChanged.RemoveListener(ChangeVolume);
+    }
+
+    private void ChangeVolume(float sliderValue)
+    {
+        if (_toggle.isOn == false)
+            _mixer.audioMixer.SetFloat(_volumeParameter, Mathf.Log10(sliderValue) * Multiplier);
     }
 }
